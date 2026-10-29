@@ -9,7 +9,8 @@ public static class Storage
     private static readonly string Dir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "HizliErisim");
 
-    private static string FilePath => Path.Combine(Dir, "items.json");
+    private static string ItemsPath => Path.Combine(Dir, "items.json");
+    private static string TemplatesPath => Path.Combine(Dir, "templates.json");
     public static string IconDir => Path.Combine(Dir, "icons");
 
     private static readonly JsonSerializerOptions Opt = new()
@@ -19,26 +20,32 @@ public static class Storage
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public static List<LaunchItem> Load()
+    private static List<T> LoadList<T>(string path)
     {
         try
         {
-            if (!File.Exists(FilePath)) return new();
-            return JsonSerializer.Deserialize<List<LaunchItem>>(File.ReadAllText(FilePath), Opt) ?? new();
+            if (!File.Exists(path)) return new();
+            return JsonSerializer.Deserialize<List<T>>(File.ReadAllText(path), Opt) ?? new();
         }
         catch
         {
             // Corrupt file: keep a backup and start fresh
-            try { File.Copy(FilePath, FilePath + ".bak", true); } catch { }
+            try { File.Copy(path, path + ".bak", true); } catch { }
             return new();
         }
     }
 
-    public static void Save(IEnumerable<LaunchItem> items)
+    private static void SaveList<T>(string path, IEnumerable<T> items)
     {
         Directory.CreateDirectory(Dir);
-        var tmp = FilePath + ".tmp";
+        var tmp = path + ".tmp";
         File.WriteAllText(tmp, JsonSerializer.Serialize(items, Opt));
-        File.Move(tmp, FilePath, true);
+        File.Move(tmp, path, true);
     }
+
+    public static List<LaunchItem> Load() => LoadList<LaunchItem>(ItemsPath);
+    public static void Save(IEnumerable<LaunchItem> items) => SaveList(ItemsPath, items);
+
+    public static List<LaunchTemplate> LoadTemplates() => LoadList<LaunchTemplate>(TemplatesPath);
+    public static void SaveTemplates(IEnumerable<LaunchTemplate> templates) => SaveList(TemplatesPath, templates);
 }
