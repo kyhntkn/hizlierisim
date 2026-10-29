@@ -1,10 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-<ItemGroup>
-  <Using Include="System.IO" />
-  <Using Include="System.Net.Http" />
-</ItemGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
@@ -16,6 +12,11 @@
     <Version>1.0.0</Version>
     <Product>Hızlı Erişim</Product>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Assets\logo.png" />
