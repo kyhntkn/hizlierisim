@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>HizliErisim</AssemblyName>
+    <RootNamespace>HizliErisim</RootNamespace>
+    <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Product>Hızlı Erişim</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\logo.png" />
+  </ItemGroup>
+
+</Project>
