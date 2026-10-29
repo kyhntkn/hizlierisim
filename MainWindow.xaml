@@ -1,144 +1,471 @@
-<Window x:Class="HizliErisim.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Hızlı Erişim" Height="680" Width="1020" MinWidth="880" MinHeight="420"
-        Background="{StaticResource Bg}" Foreground="{StaticResource TextPrimary}"
-        FontFamily="Segoe UI" Icon="Assets/logo.png" WindowStartupLocation="CenterScreen"
-        AllowDrop="True" DragOver="Window_DragOver" Drop="Window_Drop">
-    <Grid Margin="24,20,24,12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
 
-        <!-- Top bar -->
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Image Source="Assets/logo.png" Width="46" Height="46"
-                   RenderOptions.BitmapScalingMode="HighQuality"/>
-            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
-                <TextBlock Text="Hızlı Erişim" FontSize="22" FontWeight="Bold"/>
-                <TextBlock Text="Dosyalarınız, linkleriniz ve uygulamalarınız tek yerde"
-                           FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-            </StackPanel>
-            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="Şablonlar" Style="{StaticResource GhostButton}" Margin="0,0,16,0" Click="Templates_Click"/>
-                <Button Content="＋ Dosya / Klasör" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" Click="AddFile_Click"/>
-                <Button Content="＋ Link" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" Click="AddUrl_Click"/>
-                <Button Content="＋ Uygulama" Style="{StaticResource PrimaryButton}" Click="AddApp_Click"/>
-            </StackPanel>
-        </Grid>
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 
-        <!-- Search + filter -->
-        <Grid Grid.Row="1" Margin="0,18,0,6">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Button x:Name="TemplateBtn" Grid.Column="2" Style="{StaticResource GhostButton}"
-                    Padding="14,7" Margin="12,0,0,0" ToolTip="Şablonlar" Click="TemplateBtn_Click"/>
-            <Grid Width="280">
-                <TextBox x:Name="SearchBox" Padding="12,9" TextChanged="SearchBox_TextChanged"/>
-                <TextBlock x:Name="SearchHint" Text="Ara…" IsHitTestVisible="False"
-                           Foreground="{StaticResource TextSecondary}" Margin="14,0,0,0" VerticalAlignment="Center"/>
-            </Grid>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                <RadioButton Content="Tümü" Tag="All" IsChecked="True" Style="{StaticResource Chip}" Checked="Chip_Checked"/>
-                <RadioButton Content="Dosyalar" Tag="File" Style="{StaticResource Chip}" Checked="Chip_Checked"/>
-                <RadioButton Content="Linkler" Tag="Url" Style="{StaticResource Chip}" Checked="Chip_Checked"/>
-                <RadioButton Content="Uygulamalar" Tag="App" Style="{StaticResource Chip}" Checked="Chip_Checked"/>
-            </StackPanel>
-        </Grid>
+namespace HizliErisim;
 
-        <!-- Cards -->
-        <Grid Grid.Row="2">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <ItemsControl x:Name="ItemsHost" Margin="-8,6,-8,12">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Style="{StaticResource CardButton}" Width="220" Height="158" Margin="8"
-                                    Click="Card_Click" ToolTip="{Binding Target}">
-                                <Button.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Header="Aç" Click="Open_Click"/>
-                                        <MenuItem Header="Düzenle" Click="Edit_Click"/>
-                                        <Separator/>
-                                        <MenuItem Header="Sil" Click="Delete_Click"/>
-                                    </ContextMenu>
-                                </Button.ContextMenu>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <Grid Grid.Row="0">
-                                        <Grid Width="48" Height="48" HorizontalAlignment="Left">
-                                            <Image Source="{Binding Icon}" Width="44" Height="44"
-                                                   RenderOptions.BitmapScalingMode="HighQuality">
-                                                <Image.Style>
-                                                    <Style TargetType="Image">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasIcon}" Value="False">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Image.Style>
-                                            </Image>
-                                            <TextBlock Text="{Binding Glyph}" FontFamily="Segoe MDL2 Assets" FontSize="34"
-                                                       Foreground="{StaticResource Accent}"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasIcon}" Value="True">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </Grid>
-                                        <Border HorizontalAlignment="Right" VerticalAlignment="Top"
-                                                Background="{StaticResource Surface}" CornerRadius="8" Padding="8,2">
-                                            <TextBlock Text="{Binding TypeLabel}" FontSize="10" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextSecondary}"/>
-                                        </Border>
-                                    </Grid>
-                                    <TextBlock Grid.Row="1" Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis" Margin="0,10,0,3"/>
-                                    <TextBlock Grid.Row="2" Text="{Binding Description}" FontSize="12"
-                                               Foreground="{StaticResource TextSecondary}"
-                                               TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                                               LineHeight="16" LineStackingStrategy="BlockLineHeight"
-                                               MaxHeight="32" VerticalAlignment="Top" ClipToBounds="True"/>
-                                </Grid>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+public partial class MainWindow : Window
+{
+    private readonly ObservableCollection<LaunchItem> _items = new();
+    private ICollectionView? _view;
+    private ItemType? _filterType;
 
-            <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        IsHitTestVisible="False" Visibility="Collapsed">
-                <TextBlock Text="⚡" FontSize="48" HorizontalAlignment="Center"/>
-                <TextBlock x:Name="EmptyTitle" FontSize="18" FontWeight="SemiBold"
-                           HorizontalAlignment="Center" Margin="0,8,0,4"/>
-                <TextBlock x:Name="EmptyText" FontSize="13" Foreground="{StaticResource TextSecondary}"
-                           HorizontalAlignment="Center" TextAlignment="Center"/>
-            </StackPanel>
-        </Grid>
-    </Grid>
-</Window>
+    public MainWindow()
+    {
+        InitializeComponent();
+
+        foreach (var it in Storage.Load())
+        {
+            if (it.Type != ItemType.Url)
+                it.Icon = IconService.GetFileIcon(it.Target);
+
+            _items.Add(it);
+        }
+
+        _view = CollectionViewSource.GetDefaultView(_items);
+        _view.Filter = Filter;
+        ItemsHost.ItemsSource = _view;
+
+        UpdateEmpty();
+
+        // Favicons load in the background.
+        Loaded += async (_, _) =>
+        {
+            var urlItems = _items
+                .Where(i => i.Type == ItemType.Url)
+                .ToList();
+
+            await Task.WhenAll(
+                urlItems.Select(IconService.LoadIconAsync));
+        };
+    }
+
+    // ---------- Filtering ----------
+
+    private bool Filter(object o)
+    {
+        if (o is not LaunchItem i)
+            return false;
+
+        if (_filterType.HasValue &&
+            i.Type != _filterType.Value)
+            return false;
+
+        var q = SearchBox.Text?.Trim();
+
+        if (string.IsNullOrEmpty(q))
+            return true;
+
+        return Has(i.Title, q)
+            || Has(i.Description, q)
+            || Has(i.Target, q);
+    }
+
+    private static bool Has(string s, string q)
+    {
+        return s.Contains(
+            q,
+            StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    private void SearchBox_TextChanged(
+        object sender,
+        TextChangedEventArgs e)
+    {
+        SearchHint.Visibility =
+            string.IsNullOrEmpty(SearchBox.Text)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+        _view?.Refresh();
+        UpdateEmpty();
+    }
+
+    private void Chip_Checked(
+        object sender,
+        RoutedEventArgs e)
+    {
+        var tag = (sender as RadioButton)?.Tag as string;
+
+        _filterType = tag switch
+        {
+            "File" => ItemType.File,
+            "Url" => ItemType.Url,
+            "App" => ItemType.App,
+            _ => null
+        };
+
+        _view?.Refresh();
+        UpdateEmpty();
+    }
+
+    private void UpdateEmpty()
+    {
+        if (_view == null)
+            return;
+
+        if (_items.Count == 0)
+        {
+            EmptyTitle.Text = "Henüz bir şey eklemediniz";
+
+            EmptyText.Text =
+                "Yukarıdaki düğmelerle ekleyin ya da\n" +
+                "dosya, klasör, uygulama veya link " +
+                "sürükleyip buraya bırakın.";
+
+            EmptyState.Visibility = Visibility.Visible;
+        }
+        else if (_view.IsEmpty)
+        {
+            EmptyTitle.Text = "Eşleşen kayıt yok";
+            EmptyText.Text = "Aramayı veya filtreyi değiştirin.";
+
+            EmptyState.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            EmptyState.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    // ---------- Templates ----------
+
+    // MainWindow.xaml içindeki üst Şablonlar butonu.
+    private void Templates_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        OpenTemplates();
+    }
+
+    // MainWindow.xaml içindeki TemplateBtn butonu.
+    private void TemplateBtn_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        OpenTemplates();
+    }
+
+    // Her iki buton da aynı şablon penceresini açar.
+    private void OpenTemplates()
+    {
+        var dlg = new TemplatesDialog(_items.ToList())
+        {
+            Owner = this
+        };
+
+        if (dlg.ShowDialog() != true ||
+            dlg.ItemsToApply is not { } list)
+            return;
+
+        if (dlg.Replace)
+            _items.Clear();
+
+        var added = new List<LaunchItem>();
+
+        foreach (var it in list)
+        {
+            if (!dlg.Replace &&
+                _items.Any(x =>
+                    x.Type == it.Type &&
+                    string.Equals(
+                        x.Target,
+                        it.Target,
+                        StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            _items.Add(it);
+            added.Add(it);
+        }
+
+        UpdateEmpty();
+        Save();
+
+        foreach (var it in added)
+            _ = IconService.LoadIconAsync(it);
+    }
+
+    // ---------- Add / Edit / Delete ----------
+
+    private void AddFile_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        AddWithDialog(ItemType.File);
+    }
+
+    private void AddUrl_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        AddWithDialog(ItemType.Url);
+    }
+
+    private void AddApp_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        AddWithDialog(ItemType.App);
+    }
+
+    private void AddWithDialog(ItemType type)
+    {
+        var dlg = new ItemDialog(
+            new LaunchItem { Type = type },
+            true)
+        {
+            Owner = this
+        };
+
+        if (dlg.ShowDialog() == true)
+            AddItem(dlg.Result);
+    }
+
+    private async void AddItem(LaunchItem item)
+    {
+        _items.Add(item);
+
+        UpdateEmpty();
+        Save();
+
+        await IconService.LoadIconAsync(item);
+    }
+
+    private void Edit_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        var item = ItemFrom(sender);
+
+        if (item == null)
+            return;
+
+        var dlg = new ItemDialog(item.Clone(), false)
+        {
+            Owner = this
+        };
+
+        if (dlg.ShowDialog() != true)
+            return;
+
+        var r = dlg.Result;
+        var targetChanged = item.Target != r.Target;
+
+        item.Title = r.Title;
+        item.Description = r.Description;
+        item.Target = r.Target;
+
+        Save();
+
+        if (targetChanged)
+            _ = IconService.LoadIconAsync(item);
+    }
+
+    private void Delete_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        var item = ItemFrom(sender);
+
+        if (item == null)
+            return;
+
+        var ok = MessageBox.Show(
+            this,
+            $"\"{item.Title}\" listeden silinsin mi?\n" +
+            "(Gerçek dosya silinmez.)",
+            "Hızlı Erişim",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (ok != MessageBoxResult.Yes)
+            return;
+
+        _items.Remove(item);
+
+        UpdateEmpty();
+        Save();
+    }
+
+    private void Card_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (ItemFrom(sender) is { } item)
+            Launcher.Open(item);
+    }
+
+    private void Open_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        Card_Click(sender, e);
+    }
+
+    private static LaunchItem? ItemFrom(object sender)
+    {
+        if (sender is not FrameworkElement fe)
+            return null;
+
+        if (fe.DataContext is LaunchItem i)
+            return i;
+
+        if (fe is MenuItem mi &&
+            mi.Parent is ContextMenu cm &&
+            cm.PlacementTarget is FrameworkElement t &&
+            t.DataContext is LaunchItem j)
+        {
+            return j;
+        }
+
+        return null;
+    }
+
+    private void Save()
+    {
+        try
+        {
+            Storage.Save(_items);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                this,
+                "Kaydedilemedi: " + ex.Message,
+                "Hızlı Erişim",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    // ---------- Drag & drop ----------
+
+    private static string? GetUrlText(IDataObject data)
+    {
+        if (!data.GetDataPresent(DataFormats.UnicodeText))
+            return null;
+
+        var text = (data.GetData(DataFormats.UnicodeText) as string)?
+            .Split(
+                new[] { '\r', '\n' },
+                StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault()
+            ?.Trim();
+
+        if (text != null &&
+            Uri.TryCreate(
+                text,
+                UriKind.Absolute,
+                out var u) &&
+            (u.Scheme == Uri.UriSchemeHttp ||
+             u.Scheme == Uri.UriSchemeHttps))
+        {
+            return text;
+        }
+
+        return null;
+    }
+
+    private void Window_DragOver(
+        object sender,
+        DragEventArgs e)
+    {
+        var ok =
+            e.Data.GetDataPresent(DataFormats.FileDrop) ||
+            GetUrlText(e.Data) != null;
+
+        e.Effects = ok
+            ? DragDropEffects.Copy
+            : DragDropEffects.None;
+
+        e.Handled = true;
+    }
+
+    private void Window_Drop(
+        object sender,
+        DragEventArgs e)
+    {
+        if (e.Data.GetData(DataFormats.FileDrop)
+            is string[] paths)
+        {
+            foreach (var p in paths)
+                AddFromPath(p);
+        }
+        else if (GetUrlText(e.Data) is { } url)
+        {
+            AddFromUrl(url);
+        }
+
+        e.Handled = true;
+    }
+
+    private void AddFromPath(string path)
+    {
+        if (_items.Any(i =>
+            i.Type != ItemType.Url &&
+            string.Equals(
+                i.Target,
+                path,
+                StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        var isDir = Directory.Exists(path);
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+
+        var isApp = !isDir &&
+            (ext == ".exe" ||
+             ext == ".lnk" ||
+             ext == ".bat" ||
+             ext == ".cmd");
+
+        var type = isApp
+            ? ItemType.App
+            : ItemType.File;
+
+        var item = new LaunchItem
+        {
+            Type = type,
+            Title = Helpers.NameFromPath(path),
+            Target = path
+        };
+
+        item.Icon = IconService.GetFileIcon(path);
+
+        _items.Add(item);
+
+        UpdateEmpty();
+        Save();
+    }
+
+    private void AddFromUrl(string url)
+    {
+        if (_items.Any(i =>
+            i.Type == ItemType.Url &&
+            string.Equals(
+                i.Target,
+                url,
+                StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        AddItem(new LaunchItem
+        {
+            Type = ItemType.Url,
+            Title = Helpers.HostOf(url),
+            Target = url
+        });
+    }
+}
