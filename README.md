@@ -20,13 +20,18 @@ Geliştirme için: `dotnet run` veya Visual Studio 2022 ile `HizliErisim.csproj`
 - Üstteki düğmelerle Dosya/Klasör, Link ya da Uygulama ekleyin.
 - Dosya, klasör, .exe/.lnk veya tarayıcıdan link sürükleyip pencereye bırakarak da ekleyebilirsiniz.
 - Karta tıklayınca açılır. Sağ tık: Düzenle / Sil.
+- **Şablonlar** düğmesi: mevcut kartları adlandırılmış şablon olarak kaydet, geri yükle (değiştir veya ekle), adını değiştir, güncelle, sil. Dosya: %LocalAppData%\HizliErisim\templates.json
 - Veriler: %LocalAppData%\HizliErisim\items.json
 
 ## Microsoft Store (MSIX)
-1. Partner Center'da geliştirici hesabı açın ve uygulama adını ayırtın.
-2. Visual Studio 2022 -> çözüme "Windows Application Packaging Project" ekleyin,
-   Applications bölümüne HizliErisim projesini referans verin.
-3. Package.appxmanifest içinde `runFullTrust` yeteneği otomatik gelir (diğer uygulamaları/dosyaları açmak için gerekli).
-4. Görseller: `Assets\Store\` klasöründeki hazır boyutlar (StoreLogo, Square44x44, Square71x71,
-   Square150x150, Square310x310, Wide310x150) manifest'e atanır.
-5. Proje sağ tık -> Publish -> Create App Packages -> Microsoft Store -> yükleme dosyasını (.msixupload) Partner Center'a yükleyin.
+Paket kimliği `Package/AppxManifest.xml` içinde Partner Center bilgilerinizle hazır
+(Name, Publisher, PublisherDisplayName). GitHub Actions her çalışmada `HizliErisim.msix` üretir.
+
+1. Actions -> Artifacts -> `HizliErisim` içindeki `HizliErisim.msix` dosyasını indirin.
+2. Partner Center -> Hızlı Erişim -> Submission -> Packages bölümüne bu .msix dosyasını yükleyin
+   (imzalamanız gerekmez, Store imzalar).
+3. `runFullTrust` yetkisi için "restricted capability" gerekçesi sorulur. Örnek:
+   "Uygulama, kullanıcının seçtiği dosya, klasör ve programları başlatmak için tam güven gerektirir."
+4. Mağaza sayfası: açıklama, ekran görüntüleri, yaş derecelendirmesi ve (gerekirse) gizlilik politikası girilir.
+
+Not: Her yüklemede sürüm numarası artmalıdır; sürüm otomatik olarak `1.0.<çalıştırma no>.0` olur.

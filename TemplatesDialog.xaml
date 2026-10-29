@@ -1,0 +1,64 @@
+<Window x:Class="HizliErisim.TemplatesDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Şablonlar" Width="540" SizeToContent="Height" ResizeMode="NoResize" ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner" Icon="Assets/logo.png"
+        Background="{StaticResource Bg}" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI">
+    <Window.Resources>
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Padding" Value="12,9"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="bd" Background="Transparent" CornerRadius="6" Margin="2"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource CardHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource Accent}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <StackPanel Margin="26,22,26,22">
+        <TextBlock Text="Şablonlar" FontSize="19" FontWeight="SemiBold"/>
+        <TextBlock Text="Şablon, kartlarınızın adlandırılmış bir kopyasıdır (örn. İş, Ders, Oyun). İstediğiniz zaman geri yükleyebilirsiniz."
+                   TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,6,0,0"/>
+
+        <TextBlock Text="Şablon adı" Style="{StaticResource FieldLabel}"/>
+        <TextBox x:Name="NameBox"/>
+
+        <WrapPanel Margin="0,10,0,0">
+            <Button Content="Yeni olarak kaydet" Style="{StaticResource PrimaryButton}" Margin="0,0,8,8"
+                    ToolTip="Şu anki kartlarınızı bu adla şablon olarak kaydeder" Click="SaveNew_Click"/>
+            <Button Content="Adı değiştir" Style="{StaticResource GhostButton}" Margin="0,0,8,8"
+                    ToolTip="Seçili şablonun adını kutudaki adla değiştirir" Click="Rename_Click"/>
+            <Button Content="Seçiliyi güncelle" Style="{StaticResource GhostButton}" Margin="0,0,0,8"
+                    ToolTip="Seçili şablonun içeriğini şu anki kartlarınızla değiştirir" Click="Update_Click"/>
+        </WrapPanel>
+
+        <TextBlock Text="Kayıtlı şablonlar" Style="{StaticResource FieldLabel}"/>
+        <ListBox x:Name="TemplateList" Height="190" DisplayMemberPath="Display"
+                 Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}"
+                 SelectionChanged="TemplateList_SelectionChanged"/>
+
+        <DockPanel Margin="0,18,0,0" LastChildFill="False">
+            <Button DockPanel.Dock="Right" Content="Kapat" Style="{StaticResource GhostButton}"
+                    IsCancel="True" Width="90"/>
+            <Button DockPanel.Dock="Left" Content="Uygula" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0"
+                    ToolTip="Mevcut listeyi şablonla değiştirir" Click="Apply_Click"/>
+            <Button DockPanel.Dock="Left" Content="Listeye ekle" Style="{StaticResource GhostButton}" Margin="0,0,8,0"
+                    ToolTip="Şablondaki kartları mevcut listeye ekler" Click="Merge_Click"/>
+            <Button DockPanel.Dock="Left" Content="Sil" Style="{StaticResource GhostButton}" Click="Delete_Click"/>
+        </DockPanel>
+    </StackPanel>
+</Window>

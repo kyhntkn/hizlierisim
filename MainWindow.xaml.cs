@@ -92,6 +92,30 @@ public partial class MainWindow : Window
         }
     }
 
+    // ---------- Templates ----------
+
+    private void Templates_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new TemplatesDialog(_items.ToList()) { Owner = this };
+        if (dlg.ShowDialog() != true || dlg.ItemsToApply is not { } list) return;
+
+        if (dlg.Replace) _items.Clear();
+
+        var added = new List<LaunchItem>();
+        foreach (var it in list)
+        {
+            if (!dlg.Replace && _items.Any(x => x.Type == it.Type &&
+                    string.Equals(x.Target, it.Target, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            _items.Add(it);
+            added.Add(it);
+        }
+
+        UpdateEmpty();
+        Save();
+        foreach (var it in added) _ = IconService.LoadIconAsync(it);
+    }
+
     // ---------- Add / Edit / Delete ----------
 
     private void AddFile_Click(object sender, RoutedEventArgs e) => AddWithDialog(ItemType.File);
@@ -210,8 +234,7 @@ public partial class MainWindow : Window
         var isDir = Directory.Exists(path);
         var ext = Path.GetExtension(path).ToLowerInvariant();
         var isApp = !isDir && (ext == ".exe" || ext == ".lnk" || ext == ".bat" || ext == ".cmd");
-var type = isApp ? ItemType.App : ItemType.File;
-
+        var type = isApp ? ItemType.App : ItemType.File;
 
         var item = new LaunchItem { Type = type, Title = Helpers.NameFromPath(path), Target = path };
         item.Icon = IconService.GetFileIcon(path);
