@@ -209,7 +209,9 @@ public partial class MainWindow : Window
 
         var isDir = Directory.Exists(path);
         var ext = Path.GetExtension(path).ToLowerInvariant();
-        var type = !isDir && ext is ".exe" or ".lnk" or ".bat" or ".cmd" ? ItemType.App : ItemType.File;
+        var isApp = !isDir && (ext == ".exe" || ext == ".lnk" || ext == ".bat" || ext == ".cmd");
+var type = isApp ? ItemType.App : ItemType.File;
+
 
         var item = new LaunchItem { Type = type, Title = Helpers.NameFromPath(path), Target = path };
         item.Icon = IconService.GetFileIcon(path);
