@@ -1,4 +1,4 @@
-name: Build EXE
+name: Build EXE and MSIX
 
 on:
   push:
@@ -31,20 +31,46 @@ jobs:
           dotnet publish HizliErisim.csproj -c Release -r win-x64 --self-contained false
           -p:PublishSingleFile=true -o out/small
 
-      - name: Rename outputs
+      - name: Publish self-contained folder for MSIX
+        run: >
+          dotnet publish HizliErisim.csproj -c Release -r win-x64 --self-contained true
+          -p:DebugType=None -p:DebugSymbols=false -o out/msix
+
+      - name: Collect EXE files
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           Copy-Item out/portable/HizliErisim.exe dist/HizliErisim-portable.exe
           Copy-Item out/small/HizliErisim.exe dist/HizliErisim-small.exe
 
+      - name: Build MSIX (Microsoft Store package)
+        shell: pwsh
+        run: |
+          $ver = "1.0.${{ github.run_number }}.0"
+          New-Item -ItemType Directory -Force -Path msixroot/Assets | Out-Null
+          Copy-Item out/msix/* msixroot -Recurse -Force
+          Copy-Item Assets/Store/*.png msixroot/Assets -Force
+          $manifest = (Get-Content Package/AppxManifest.xml -Raw -Encoding UTF8).Replace("__VERSION__", $ver)
+          [System.IO.File]::WriteAllText("$PWD/msixroot/AppxManifest.xml", $manifest, (New-Object System.Text.UTF8Encoding($false)))
+          $kits = "${env:ProgramFiles(x86)}\Windows Kits\10\bin"
+          $mk = Get-ChildItem $kits -Recurse -Filter makeappx.exe |
+                Where-Object { $_.FullName -match '\\x64\\' } |
+                Sort-Object FullName -Descending | Select-Object -First 1
+          Write-Host "Using $($mk.FullName)"
+          & $mk.FullName pack /d msixroot /p dist/HizliErisim.msix /o
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
       - uses: actions/upload-artifact@v4
         with:
           name: HizliErisim
-          path: dist/*.exe
+          path: |
+            dist/*.exe
+            dist/*.msix
 
       - name: Create release (on version tag)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*.exe
+          files: |
+            dist/*.exe
+            dist/*.msix
