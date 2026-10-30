@@ -41,8 +41,6 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="TemplateBtn" Grid.Column="2" Style="{StaticResource GhostButton}"
-                    Padding="14,7" Margin="12,0,0,0" ToolTip="Şablonlar" Click="TemplateBtn_Click"/>
             <Grid Width="280">
                 <TextBox x:Name="SearchBox" Padding="12,9" TextChanged="SearchBox_TextChanged"/>
                 <TextBlock x:Name="SearchHint" Text="Ara…" IsHitTestVisible="False"
